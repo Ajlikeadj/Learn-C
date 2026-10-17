@@ -12,17 +12,18 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="bar"></div>
-<header><div>C<b>/</b>Language</div><button class="tog" id="tog" aria-label="Toggle light and dark mode">◐ Theme</button></header>
-<nav id="nav"></nav>
+<a class="skip-link" href="#main">Skip to course content</a>
+<div id="bar" aria-hidden="true"></div>
+<header><a class="brand" href="#top" aria-label="C Language course home">C<b>/</b>Language</a><nav id="nav" aria-label="Course chapters"></nav><button class="tog" id="tog" aria-label="Toggle light and dark mode">◐ Theme</button></header>
 <div class="hero" id="top">
-<div class="tag">Born 1972 · Bell Labs · Dennis Ritchie</div>
+<div class="tag">C PROGRAMMING · FIELD GUIDE 01 · 24 LESSONS</div>
 <h1>C<i>.</i></h1>
-<p>The language underneath everything — operating systems, databases, compilers, microcontrollers. Follow the first-year syllabus in order — five units, 24 chapters, one topic per page.</p>
+<p>A field guide to the language underneath everything—from operating systems to embedded devices. Twenty-four focused lessons, grounded in examples and built for practice.</p>
+<div class="hero-actions"><a class="primary" href="#/c/1">Start learning <span aria-hidden="true">↗</span></a><a href="#main">Explore the syllabus <span aria-hidden="true">↓</span></a></div>
 <div class="scroll">SCROLL ↓</div>
 </div>
 <div class="mq"><div id="mq"></div></div>
-<main id="main"></main>
+<main id="main" tabindex="-1"></main>
 <div class="end"><div class="tag">End of the road</div><h2>Now go write <i>some C.</i></h2><p>gcc -Wall -Wextra -g main.c -o main &amp;&amp; ./main</p><p class="cred">Made by <a href="https://github.com/Ajlikeadj" target="_blank" rel="noopener">Ajlikeadj</a></p></div>
 
 <script src="script.js"></script>

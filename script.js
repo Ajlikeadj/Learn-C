@@ -90,7 +90,7 @@ int sumEven(int n) {          /* by value: sum of first n even numbers */
 
 int x = 1, y = 2;
 good(&x, &y);                 /* x=2, y=1 */`,out:"x=2 y=1 / sumEven(4)=20"},
-{t:"<i>Pointers</i>",tag:"Unit 2 · Memory addresses",p:"A pointer is a variable that stores the memory address of another variable. The & operator gives an address and * (dereference) reaches the value stored there. Pointers make pass by reference possible and are the foundation for arrays, strings and dynamic memory.",pts:["Declare: <code>int *p;</code> — read as 'p points to an int'","<code>p = &amp;x;</code> then <code>*p = 50;</code> changes x","Initialise to <code>NULL</code> if not yet pointing anywhere"],f:"ptr.c",code:String.raw`int x = 10;
+{t:"<i>Pointers</i>",tag:"Unit 2 · Memory addresses",p:"A pointer is a variable that stores the memory address of another variable. The & operator gives an address and * (dereference) reaches the value stored there. Pointers make reference-style updates possible and are the foundation for arrays, strings and dynamic memory.",pts:["Declare: <code>int *p;</code> — read as 'p points to an int'","<code>p = &amp;x;</code> then <code>*p = 50;</code> changes x","Initialise to <code>NULL</code> if not yet pointing anywhere"],f:"ptr.c",code:String.raw`int x = 10;
 int *p = &x;
 
 printf("x = %d\n", x);
@@ -307,11 +307,14 @@ const row=words.map((w,i)=>i%3==0?`<span><em>${w}</em></span>`:`<span>${w}</span
 $("#mq").innerHTML=row+row;
 const secs=[...document.querySelectorAll("section.pg")],dots=[...nav.children];
 const io1=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add("in")}),{threshold:.12});
-const io2=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)dots.forEach((d,i)=>d.classList.toggle("on",secs[i]===e.target))}),{rootMargin:"-45% 0px -45% 0px"});
+const io2=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)dots.forEach((d,i)=>d.classList.toggle("on",secs[i]===e.target));const on=nav.querySelector(".on");if(on){nav.scrollTop=on.offsetTop-nav.clientHeight/2+on.offsetHeight/2;nav.scrollLeft=on.offsetLeft-nav.clientWidth/2+on.offsetWidth/2}}),{rootMargin:"-45% 0px -45% 0px"});
 secs.forEach(x=>{io1.observe(x);io2.observe(x)});
 const bar=$("#bar"),h1=$(".hero h1");
 const motionQuery=matchMedia("(prefers-reduced-motion: reduce)");let parallaxCleared=false;
+const heroEl=$(".hero"),endEl=$(".end");
+function navVis(){document.body.classList.toggle("nv",!document.body.classList.contains("d")&&scrollY>heroEl.offsetHeight*.55&&endEl.getBoundingClientRect().top>innerHeight*.35)}
 function tick(){
+ navVis();
  const y=scrollY,m=document.documentElement.scrollHeight-innerHeight;
  bar.style.width=(m>0?Math.max(0,Math.min(100,y/m*100)):0)+"%";
  if(motionQuery.matches||document.body.classList.contains("d")){
@@ -718,8 +721,8 @@ function render(i){
 function route(){
  const m=location.hash.match(/^#\/c\/(\d+)$/);
  if(!m){if(cur>=0){document.body.classList.remove("d");det.innerHTML="";document.title=baseTitle;
-   const s=document.getElementById("c"+String(cur+1).padStart(2,"0"));cur=-1;if(s)s.scrollIntoView({behavior:"instant"})}return}
+   const s=document.getElementById("c"+String(cur+1).padStart(2,"0"));cur=-1;if(location.hash==="#top")scrollTo({top:0,behavior:"instant"});else if(s)s.scrollIntoView({behavior:"instant"})}return}
  const i=+m[1]-1;if(!T[i]){document.body.classList.remove("d");det.innerHTML="";document.title=baseTitle;const s=cur>=0?document.getElementById("c"+String(cur+1).padStart(2,"0")):null;cur=-1;if(s)s.scrollIntoView({behavior:"instant"});return;}
  cur=i;document.body.classList.add("d");render(i);scrollTo({top:0,behavior:"instant"});
 }
-addEventListener("hashchange",route);route();
+addEventListener("hashchange",()=>{route();requestAnimationFrame(tick)});route();
