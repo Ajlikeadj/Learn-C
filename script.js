@@ -7,7 +7,6 @@ int main(void) {
     char  grade = 'A';
     printf("%d %.2f %c\n", marks, cgpa, grade);
     printf("%zu %zu %zu bytes\n", sizeof(int), sizeof(float), sizeof(char));
-    return 0;
 }`,out:"87 8.65 A / 4 4 1 bytes"},
 {t:"Assignment <i>&amp; Arithmetic</i>",tag:"Unit 1 · Expressions",p:"The = operator stores the right-hand value in the left-hand variable; it is not a maths equation. Expressions follow precedence: * / % first, then + -, left to right, and brackets override everything. Swapping two values needs care, because assigning one destroys the other.",pts:["<code>7 / 2</code> is 3 for ints; use <code>7 / 2.0</code> for 3.5","<code>a += 5</code> is shorthand for <code>a = a + 5</code>","Swap with a temporary variable, or without one using arithmetic"],f:"expr.c",code:String.raw`int a = 10, b = 20, t;
 
