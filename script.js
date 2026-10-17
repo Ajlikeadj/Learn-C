@@ -1,5 +1,5 @@
 const T=[
-{t:"Data <i>Types</i>",tag:"Unit 1 · Data types",p:"Every variable has a type that fixes how much memory it takes and which values it can hold. Start with three: int for whole numbers, float for decimals and char for a single character.",pts:["<code>int</code> — 4 bytes, roughly -2.1 billion to +2.1 billion","<code>float</code> — 4 bytes, about 6 digits of precision (<code>double</code> gives 8 bytes, 15 digits)","<code>char</code> — 1 byte, stores 'A' as its code 65"],f:"types.c",code:String.raw`#include <stdio.h>
+{t:"Data <i>Types</i>",tag:"Unit 1 · Data types",p:"Every variable has a type that fixes how much memory it takes and which values it can hold. Start with three: int for whole numbers, float for decimals and char for a single character.",pts:["<code>int</code> — typically 4 bytes on modern platforms; exact range depends on the implementation","<code>float</code> — typically 4 bytes, about 6 digits of precision (<code>double</code> typically gives 8 bytes and 15 digits)","<code>char</code> — 1 byte; 'A' is code 65 in ASCII"],f:"types.c",code:String.raw`#include <stdio.h>
 
 int main(void) {
     int   marks = 87;
@@ -7,6 +7,7 @@ int main(void) {
     char  grade = 'A';
     printf("%d %.2f %c\n", marks, cgpa, grade);
     printf("%zu %zu %zu bytes\n", sizeof(int), sizeof(float), sizeof(char));
+    return 0;
 }`,out:"87 8.65 A / 4 4 1 bytes"},
 {t:"Assignment <i>&amp; Arithmetic</i>",tag:"Unit 1 · Expressions",p:"The = operator stores the right-hand value in the left-hand variable; it is not a maths equation. Expressions follow precedence: * / % first, then + -, left to right, and brackets override everything. Swapping two values needs care, because assigning one destroys the other.",pts:["<code>7 / 2</code> is 3 for ints; use <code>7 / 2.0</code> for 3.5","<code>a += 5</code> is shorthand for <code>a = a + 5</code>","Swap with a temporary variable, or without one using arithmetic"],f:"expr.c",code:String.raw`int a = 10, b = 20, t;
 
@@ -46,7 +47,10 @@ int main(void) {
     char name[30];
 
     printf("Name, age, height: ");
-    scanf("%s %d %f", name, &age, &height);
+    if (scanf("%29s %d %f", name, &age, &height) != 3) {
+        fputs("Invalid input\\n", stderr);
+        return 1;
+    }
     printf("%s is %d years and %.1f m tall\n", name, age, height);
     return 0;
 }`,out:"Asha is 18 years and 1.6 m tall"},
@@ -75,7 +79,7 @@ int main(void) {
     int t = total(80, 70, 90);
     printf("%d %.1f %c\n", t, average(t), grade(average(t)));
 }`,out:"240 80.0 A"},
-{t:"Pass by Value <i>&amp; Reference</i>",tag:"Unit 2 · Parameter passing",p:"By default C passes copies of arguments (pass by value), so changing a parameter does not change the caller’s variable. To modify the original, pass its address (pass by reference) and work through a pointer.",pts:["By value: safe, the original is untouched","By reference: pass <code>&amp;x</code>, receive <code>int *p</code>, change with <code>*p</code>","Use it when a function must return more than one result"],f:"pass.c",code:String.raw`void bad(int a, int b)   { int t = a; a = b; b = t; }  /* no effect */
+{t:"Pass by Value <i>&amp; Reference</i>",tag:"Unit 2 · Parameter passing",p:"By default C passes arguments by value: the function receives copies. To update the caller’s variable, pass its address with a pointer; this is often informally called “pass by reference,” but C itself has no reference parameters.",pts:["By value: safe, the original is untouched","Pointer-based update (reference-style): pass <code>&amp;x</code>, receive <code>int *p</code>, change with <code>*p</code>","Use it when a function must return more than one result"],f:"pass.c",code:String.raw`void bad(int a, int b)   { int t = a; a = b; b = t; }  /* no effect */
 void good(int *a, int *b){ int t = *a; *a = *b; *b = t; } /* swaps  */
 
 int sumEven(int n) {          /* by value: sum of first n even numbers */
@@ -97,7 +101,7 @@ printf("*p = %d\n", *p);
 printf("x = %d\n", x);`,out:"x = 10 ... *p = 10 ... x = 50"},
 {t:"Helper <i>Functions</i>",tag:"Unit 2 · Modular design &amp; return values",p:"A helper function does one small job and returns a result so bigger functions stay readable. Return a value when you have a single answer; use pointers for several. Typical examples: check if a number is prime, find a grade, or convert units.",pts:["Return 1/0 from checker functions such as <code>isPrime</code>","Reuse helpers: <code>calculateAverage()</code> can call <code>calculateTotal()</code>","Convert: F = C × 9/5 + 32 and K = C + 273.15"],f:"helper.c",code:String.raw`int isPrime(int n) {
     if (n < 2) return 0;
-    for (int i = 2; i * i <= n; i++)
+    for (int i = 2; i <= n / i; i++)
         if (n % i == 0) return 0;
     return 1;
 }
@@ -208,7 +212,7 @@ int powLoop(int a, int n) { int r = 1; while (n--) r *= a; return r; }
 
 int bsearch_r(int a[], int lo, int hi, int key) {
     if (lo > hi) return -1;
-    int mid = (lo + hi) / 2;
+    int mid = lo + (hi - lo) / 2;
     if (a[mid] == key) return mid;
     return a[mid] < key ? bsearch_r(a, mid + 1, hi, key)
                         : bsearch_r(a, lo, mid - 1, key);
@@ -236,7 +240,7 @@ Student s[3] = {{1, "Asha", 82.5f}, {2, "Ravi", 74.0f}, {3, "Meena", 91.0f}};
 
 for (int i = 0; i < 3; i++)
     printf("%d %s %.1f\n", s[i].id, s[i].name, s[i].marks);`,out:"1 Asha 82.5 / 2 Ravi 74.0 / 3 Meena 91.0"},
-{t:"Structures <i>&amp; Functions</i>",tag:"Unit 5 · Modular programming",p:"Structures can be passed to functions by value (a copy) or by reference (a pointer, so changes stick) and can be returned from functions. Combining them with arrays of structures gives modular programs: separate functions to read, update, search and display records.",pts:["By value: <code>void show(Employee e)</code>","By reference: <code>void giveRaise(Employee *e)</code> and <code>e->salary</code>","Return a structure or a pointer to the found record, NULL if not found"],f:"emp.c",code:String.raw`typedef struct { int id; float salary; } Employee;
+{t:"Structures <i>&amp; Functions</i>",tag:"Unit 5 · Modular programming",p:"Structures can be passed to functions by value (a copy) or by reference (a pointer, so changes stick) and can be returned from functions. Combining them with arrays of structures gives modular programs: separate functions to read, update, search and display records.",pts:["By value: <code>void show(Employee e)</code>","Pointer-based update: <code>void giveRaise(Employee *e)</code> and <code>e->salary</code>","Return a structure or a pointer to the found record, NULL if not found"],f:"emp.c",code:String.raw`typedef struct { int id; float salary; } Employee;
 
 Employee giveRaise(Employee e, float pct) {   /* returns updated copy */
     e.salary += e.salary * pct / 100;
@@ -251,33 +255,40 @@ void bonus(Employee *e) { e->salary += 500; }  /* by reference */`,out:"find(101
 {t:"Dynamic Memory <i>Allocation</i>",tag:"Unit 5 · malloc, calloc, realloc, free",p:"Normal arrays need a fixed size at compile time. Dynamic allocation requests memory from the heap at run time, which suits unpredictable or large inputs. Include <stdlib.h>. Always check for NULL and free the memory when done, or you leak it.",pts:["<code>malloc(n * sizeof(int))</code> — uninitialised memory","<code>calloc(n, sizeof(int))</code> — all zeros","<code>realloc(p, newSize)</code> grows or shrinks; <code>free(p)</code> releases"],f:"dynamic.c",code:String.raw`#include <stdlib.h>
 
 int n;
-scanf("%d", &n);
-int *a = malloc(n * sizeof(int));
+if (scanf("%d", &n) != 1 || n <= 0) return 1;
+int *a = malloc((size_t)n * sizeof *a);
 if (a == NULL) return 1;
 
 int sum = 0;
 for (int i = 0; i < n; i++) { scanf("%d", &a[i]); sum += a[i]; }
 printf("sum = %d\n", sum);
 
-a = realloc(a, (n + 5) * sizeof(int));   /* add 5 more elements */
+int *tmp = realloc(a, (size_t)(n + 5) * sizeof *a);
+if (tmp == NULL) { free(a); return 1; }
+a = tmp;
 free(a);
 a = NULL;`,out:"sum = 60 (for 10 20 30)"},
-{t:"File <i>Handling</i>",tag:"Unit 5 · fopen, fscanf, fgets, feof, fclose",p:"Files store data beyond program execution. Open a file with fopen, read or write with fscanf, fgets or fprintf, test the end with feof, and always close it with fclose. fopen returns NULL on failure, so check it. Reading line by line is the basis for counting characters, words, lines or building a frequency report.",pts:["Modes: <code>\"r\"</code> read, <code>\"w\"</code> write (erases), <code>\"a\"</code> append","<code>fscanf(f, \"%d\", &amp;x)</code> returns how many items it read","<code>fgets(buf, size, f)</code> reads one whole line"],f:"count.c",code:String.raw`FILE *f = fopen("data.txt", "r");
+{t:"File <i>Handling</i>",tag:"Unit 5 · fopen, fscanf, fgets, feof, fclose",p:"Files store data beyond program execution. Open a file with fopen, read or write with fscanf, fgets or fprintf, test the end with feof, and always close it with fclose. fopen returns NULL on failure, so check it. Reading line by line is the basis for counting bytes, words, lines or building a frequency report.",pts:["Modes: <code>\"r\"</code> read, <code>\"w\"</code> write (erases), <code>\"a\"</code> append","<code>fscanf(f, \"%d\", &amp;x)</code> returns how many items it read","<code>fgets(buf, size, f)</code> reads one whole line"],f:"count.c",code:String.raw`FILE *f = fopen("data.txt", "r");
 if (f == NULL) { printf("Cannot open\n"); return 1; }
 
 char line[200];
 int lines = 0, chars = 0, words = 0, inWord = 0;
+int hasData = 0, lastWasNewline = 1;
 while (fgets(line, sizeof line, f)) {
-    lines++;
+    
     for (int i = 0; line[i]; i++) {
         chars++;
-        if (line[i] == ' ' || line[i] == '\n' || line[i] == '\t')
+        hasData = 1;
+        lastWasNewline = (line[i] == '\n');
+        if (line[i] == '\n') { lines++; inWord = 0; }
+        else if (line[i] == ' ' || line[i] == '\t' || line[i] == '\r')
             inWord = 0;
         else if (!inWord) { inWord = 1; words++; }
     }
 }
+if (hasData && !lastWasNewline) lines++;
 fclose(f);
-printf("%d lines, %d words, %d chars\n", lines, words, chars);`,out:"3 lines, 14 words, 71 chars"}
+printf("%d lines, %d words, %d bytes\n", lines, words, chars);`,out:"3 lines, 14 words, 71 bytes"}
 ];
 const $=s=>document.querySelector(s);
 const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -299,13 +310,19 @@ const io1=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.targ
 const io2=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)dots.forEach((d,i)=>d.classList.toggle("on",secs[i]===e.target))}),{rootMargin:"-45% 0px -45% 0px"});
 secs.forEach(x=>{io1.observe(x);io2.observe(x)});
 const bar=$("#bar"),h1=$(".hero h1");
+const motionQuery=matchMedia("(prefers-reduced-motion: reduce)");let parallaxCleared=false;
 function tick(){
  const y=scrollY,m=document.documentElement.scrollHeight-innerHeight;
- bar.style.width=(y/m*100)+"%";
+ bar.style.width=(m>0?Math.max(0,Math.min(100,y/m*100)):0)+"%";
+ if(motionQuery.matches||document.body.classList.contains("d")){
+  if(!parallaxCleared){h1.style.transform="";secs.forEach(s=>{s.firstElementChild.style.transform=""});parallaxCleared=true;}
+  return;
+ }
+ parallaxCleared=false;
  h1.style.transform=`translateY(${y*.25}px) scale(${1+y/4000})`;
  secs.forEach(s=>{const r=s.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight){s.firstElementChild.style.transform=`translateY(${-r.top*.18}px)`}});
 }
-addEventListener("scroll",()=>requestAnimationFrame(tick),{passive:true});tick();
+motionQuery.addEventListener?.("change",tick);addEventListener("scroll",()=>requestAnimationFrame(tick),{passive:true});tick();
 const root=document.documentElement;
 try{const v=localStorage.getItem("theme");if(v)root.dataset.theme=v}catch(e){}
 $("#tog").onclick=()=>{
@@ -314,7 +331,7 @@ $("#tog").onclick=()=>{
  try{localStorage.setItem("theme",root.dataset.theme)}catch(e){}
 };
 const D=[
-{d:"Size decides range. A signed 4-byte <code>int</code> holds -2,147,483,648 to 2,147,483,647; go past it and the value wraps around (overflow). <code>float</code> keeps only 6–7 significant digits, so <code>0.1f + 0.2f</code> is not exactly 0.3 — use <code>double</code> when precision matters. <code>char</code> is really a small integer, so <code>'A' + 1</code> is 66 and prints as 'B' with <code>%c</code>. Pick the smallest type that safely fits your data.",q:[["A school app stores a student’s roll number, CGPA and section letter. Declare suitable variables, assign sample values and print them on one line.",String.raw`int roll = 21;
+{d:"On common systems, a 32-bit signed <code>int</code> holds -2,147,483,648 to 2,147,483,647; signed overflow is undefined behavior in C, so never rely on wraparound. <code>float</code> keeps only 6–7 significant digits, so <code>0.1f + 0.2f</code> is not exactly 0.3 — use <code>double</code> when precision matters. <code>char</code> is really a small integer, so <code>'A' + 1</code> is 66 and prints as 'B' with <code>%c</code>. Pick the smallest type that safely fits your data.",q:[["A school app stores a student’s roll number, CGPA and section letter. Declare suitable variables, assign sample values and print them on one line.",String.raw`int roll = 21;
 float cgpa = 8.7f;
 char section = 'B';
 printf("Roll %d, CGPA %.1f, Section %c\n", roll, cgpa, section);`],["A shop’s yearly sales may reach 5 billion rupees. Show why int is a poor choice and what you would use instead.",String.raw`/* int max is about 2.1 billion, so 5 billion overflows. */
@@ -355,7 +372,7 @@ else                           printf("Special symbol\n");`]]},
 scanf("%f", &r);
 printf("Area = %.2f\n", 3.14159f * r * r);
 printf("Circumference = %.2f\n", 2 * 3.14159f * r);`],["Read a student’s name and marks in 3 subjects (out of 100 each); print the name and percentage.",String.raw`char name[30]; int a, b, c;
-scanf("%s %d %d %d", name, &a, &b, &c);
+scanf("%29s %d %d %d", name, &a, &b, &c);
 printf("%s scored %.1f%%\n", name, (a + b + c) / 3.0);`]]},
 {d:"<code>switch</code> compares one int or char expression against constant cases. Without <code>break</code> execution <em>falls through</em> into the next case; this is sometimes useful (grouping cases) and often a bug. <code>default</code> catches everything else. Use switch for fixed choices such as menus and grades; use if…else for ranges and combined conditions, which switch cannot express.",q:[["Build a calculator: read two numbers and an operator (+ - * /) and print the result. Handle division by zero.",String.raw`float a, b; char op;
 scanf("%f %c %f", &a, &op, &b);
@@ -391,7 +408,7 @@ int main(void) {
     float l = fuelNeeded(300, 15);
     printf("%.1f litres, Rs %.2f\n", l, fuelCost(l, 100));
 }`]]},
-{d:"Pass by value copies the argument, so the function cannot change the caller’s variable. Pass by reference sends the variable’s address; the function receives a pointer and changes the original with <code>*p</code>. Use value for small inputs you only read, and reference when you need to modify the caller’s data or return several results. Forgetting the <code>&amp;</code> in the call is the usual mistake.",q:[["Write transfer(&from, &to, amount) that moves money between accounts only if the balance is enough.",String.raw`void transfer(int *from, int *to, int amt) {
+{d:"C always passes by value. If a function receives a pointer to the caller’s object, it can modify that object through the pointer; this pattern is often informally called “pass by reference.” Use plain values for inputs you only read, and pointers when you need to modify caller-owned data or return several results. Forgetting the <code>&amp;</code> in the call is a common mistake.",q:[["Write transfer(&from, &to, amount) that moves money between accounts only if the balance is enough.",String.raw`void transfer(int *from, int *to, int amt) {
     if (*from >= amt) { *from -= amt; *to += amt; }
     else printf("Insufficient balance\n");
 }
@@ -431,7 +448,7 @@ int main(void) {
     printf("Fine = Rs %d\n", fine(10));   /* 14 + 15 = 29 */
 }`],["Print all prime numbers between 1 and 50 using an isPrime helper.",String.raw`int isPrime(int n) {
     if (n < 2) return 0;
-    for (int i = 2; i * i <= n; i++)
+    for (int i = 2; i <= n / i; i++)
         if (n % i == 0) return 0;
     return 1;
 }
@@ -477,7 +494,7 @@ u[strcspn(u, "\n")] = '\0';          /* remove newline */
 printf("Length = %zu\n", strlen(u));
 if (strchr(u, ' ')) printf("Spaces not allowed\n");
 else                printf("Valid\n");`],["Read a password and a confirm-password; print whether they match.",String.raw`char p1[30], p2[30];
-scanf("%s %s", p1, p2);
+scanf("%29s %29s", p1, p2);
 if (strcmp(p1, p2) == 0) printf("Passwords match\n");
 else                     printf("Passwords differ\n");`]]},
 {d:"A recursive step on an array handles element 0 and recurses on the rest (<code>a + 1</code>, <code>n - 1</code>), or carries an index. For strings, recursion stops at <code>'\\0'</code>. The pointer form <code>*(a + i)</code> is identical to <code>a[i]</code>, which is why arrays and pointers feel interchangeable. Recursion is clear but uses stack space for every element.",q:[["Count the capital letters in a sentence recursively.",String.raw`int caps(char *s) {
@@ -600,13 +617,15 @@ int main(void) {
     x = sell(x, 12);
     printf("%d left\n", x.stock);   /* 38 */
 }`]]},
-{d:"The stack holds fixed-size variables; the heap lets you request memory at run time. <code>malloc</code> returns a pointer to uninitialised bytes (or <code>NULL</code> if memory is exhausted), <code>calloc</code> zero-fills, <code>realloc</code> resizes and may move the block, and <code>free</code> returns it. After <code>free</code>, set the pointer to <code>NULL</code>. Forgetting to free causes a memory leak; using memory after free is a serious bug.",q:[["Read n and then n daily expenses into a dynamically allocated array. Print the total and free the memory.",String.raw`int n; scanf("%d", &n);
-int *e = malloc(n * sizeof(int));
+{d:"The stack holds fixed-size variables; the heap lets you request memory at run time. <code>malloc</code> returns a pointer to uninitialised bytes (or <code>NULL</code> if memory is exhausted), <code>calloc</code> zero-fills, <code>realloc</code> resizes and may move the block, and <code>free</code> returns it. After <code>free</code>, set the pointer to <code>NULL</code>. Forgetting to free causes a memory leak; using memory after free is a serious bug.",q:[["Read n and then n daily expenses into a dynamically allocated array. Print the total and free the memory.",String.raw`int n;
+if (scanf("%d", &n) != 1 || n <= 0) return 1;
+int *e = malloc((size_t)n * sizeof *e);
 if (e == NULL) return 1;
 int total = 0;
 for (int i = 0; i < n; i++) { scanf("%d", &e[i]); total += e[i]; }
 printf("Total = %d\n", total);
-free(e);`],["In an election with 4 candidates, use calloc for the vote counts, record some votes and print the tally.",String.raw`int *v = calloc(4, sizeof(int));      /* all start at 0 */
+free(e);`],["In an election with 4 candidates, use calloc for the vote counts, record some votes and print the tally.",String.raw`int *v = calloc(4, sizeof *v);
+if (v == NULL) return 1;               /* check allocation */
 int ballots[6] = {1, 3, 1, 0, 2, 1};
 for (int i = 0; i < 6; i++) v[ballots[i]]++;
 for (int i = 0; i < 4; i++) printf("Candidate %d: %d\n", i, v[i]);
@@ -662,11 +681,15 @@ int main(void) {
     printf("fib(%d) = %d, loop iterations = %d\n", n, b, iter);    /* 9 */
 }`]);
 D[22].q.push(["A to-do app starts with room for 2 task IDs and grows by 2 whenever it is full. Add task IDs 101 to 105 using realloc and print the list.",String.raw`int cap = 2, n = 0;
-int *list = malloc(cap * sizeof(int));
+int *list = malloc((size_t)cap * sizeof *list);
+if (list == NULL) return 1;
 for (int id = 101; id <= 105; id++) {
     if (n == cap) {
-        cap += 2;
-        list = realloc(list, cap * sizeof(int));
+        int newCap = cap + 2;
+        int *tmp = realloc(list, (size_t)newCap * sizeof *list);
+        if (tmp == NULL) { free(list); return 1; }
+        list = tmp;
+        cap = newCap;
     }
     list[n++] = id;
 }
@@ -696,7 +719,7 @@ function route(){
  const m=location.hash.match(/^#\/c\/(\d+)$/);
  if(!m){if(cur>=0){document.body.classList.remove("d");det.innerHTML="";document.title=baseTitle;
    const s=document.getElementById("c"+String(cur+1).padStart(2,"0"));cur=-1;if(s)s.scrollIntoView({behavior:"instant"})}return}
- const i=+m[1]-1;if(!T[i])return;
+ const i=+m[1]-1;if(!T[i]){document.body.classList.remove("d");det.innerHTML="";document.title=baseTitle;const s=cur>=0?document.getElementById("c"+String(cur+1).padStart(2,"0")):null;cur=-1;if(s)s.scrollIntoView({behavior:"instant"});return;}
  cur=i;document.body.classList.add("d");render(i);scrollTo({top:0,behavior:"instant"});
 }
 addEventListener("hashchange",route);route();
