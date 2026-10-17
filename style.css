@@ -270,3 +270,7 @@ body.d #bar{display:block}
 .hero:after{content:'01 — 05  /  UNITS\00000A24 CHAPTERS  /  C'}
 /* Softer page grid so it reads as texture, not lines through the text */
 body{background-image:linear-gradient(color-mix(in srgb,var(--line) 55%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--line) 55%,transparent) 1px,transparent 1px)}
+
+/* ---- Custom cursors: arrow everywhere, hand on anything clickable ---- */
+html{cursor:url("arrow.cur"),auto}
+a,button,[role="button"],summary,select,label[for],.tog,.sa,.more,.primary,#nav a,.brand,.back,.pn a,.skip-link{cursor:url("hand.cur"),pointer}
