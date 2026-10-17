@@ -18,7 +18,7 @@ b = a - b;
 a = a - b;
 
 int r = 2 + 3 * 4;            /* 14, not 20 */
-int s = (2 + 3) * 4;          /* 20 */`,out:"a=10 b=20 after two swaps; r=14, s=20"},
+int s = (2 + 3) * 4;          /* 20 */`,out:"a=10, b=20 (swapped twice); r=14, s=20"},
 {t:"Decision <i>Making</i>",tag:"Unit 1 · if…else if…else",p:"Programs choose a path using conditions. The first true condition in an if…else if…else ladder runs, the rest are skipped, and else catches everything left over. Any non-zero value counts as true.",pts:["Conditions go inside <code>( )</code>; use braces for multi-line blocks","Order matters: test the most specific condition first","Never write <code>if (x = 5)</code> — that assigns instead of comparing"],f:"grade.c",code:String.raw`int marks = 82;
 
 if (marks >= 90)
@@ -139,7 +139,7 @@ printf("%s\n", strchr(s1, 'W'));      /* World */
 printf("%s\n", strstr(s1, "lo"));     /* lo World */
 
 char r[30];
-strcpy(r, s1);                        /* copy into r */`,out:"5 / -1 / World / lo World"},
+strcpy(r, s1);                        /* copy into r */`,out:"5 / negative / World / lo World"},
 {t:"Recursion with <i>Arrays &amp; Strings</i>",tag:"Unit 3 · Pointers in arrays and strings",p:"An array name acts as a pointer to its first element, so a[i] is the same as *(a + i). Recursion walks an array or string by handling one element and passing the rest (a + 1, or index + 1) to the next call. A helper function often carries the index.",pts:["Length without <code>strlen</code>: 0 at '\\0', else 1 + length of the rest","Maximum of an array: compare first element with max of the rest","Reverse a string by recursing on the index and printing on the way back"],f:"rec_str.c",code:String.raw`int len(char *s) { return *s == '\0' ? 0 : 1 + len(s + 1); }
 
 int maxArr(int a[], int n) {
@@ -237,9 +237,9 @@ Student s[3] = {{1, "Asha", 82.5f}, {2, "Ravi", 74.0f}, {3, "Meena", 91.0f}};
 
 for (int i = 0; i < 3; i++)
     printf("%d %s %.1f\n", s[i].id, s[i].name, s[i].marks);`,out:"1 Asha 82.5 / 2 Ravi 74.0 / 3 Meena 91.0"},
-{t:"Structures <i>&amp; Functions</i>",tag:"Unit 5 · Modular programming",p:"Structures can be passed to functions by value (a copy) or by reference (a pointer, so changes stick) and can be returned from functions. Combining them with arrays of structures gives modular programs: separate functions to read, update, search and display records.",pts:["By value: <code>void show(Employee e)</code>","By reference: <code>void raise(Employee *e)</code> and <code>e->salary</code>","Return a structure or a pointer to the found record, NULL if not found"],f:"emp.c",code:String.raw`typedef struct { int id; float salary; } Employee;
+{t:"Structures <i>&amp; Functions</i>",tag:"Unit 5 · Modular programming",p:"Structures can be passed to functions by value (a copy) or by reference (a pointer, so changes stick) and can be returned from functions. Combining them with arrays of structures gives modular programs: separate functions to read, update, search and display records.",pts:["By value: <code>void show(Employee e)</code>","By reference: <code>void giveRaise(Employee *e)</code> and <code>e->salary</code>","Return a structure or a pointer to the found record, NULL if not found"],f:"emp.c",code:String.raw`typedef struct { int id; float salary; } Employee;
 
-Employee raise(Employee e, float pct) {   /* returns updated copy */
+Employee giveRaise(Employee e, float pct) {   /* returns updated copy */
     e.salary += e.salary * pct / 100;
     return e;
 }
@@ -267,21 +267,22 @@ a = NULL;`,out:"sum = 60 (for 10 20 30)"},
 if (f == NULL) { printf("Cannot open\n"); return 1; }
 
 char line[200];
-int lines = 0, chars = 0, words = 0;
+int lines = 0, chars = 0, words = 0, inWord = 0;
 while (fgets(line, sizeof line, f)) {
     lines++;
     for (int i = 0; line[i]; i++) {
         chars++;
-        if (line[i] == ' ' && line[i+1] != ' ') words++;
+        if (line[i] == ' ' || line[i] == '\n' || line[i] == '\t')
+            inWord = 0;
+        else if (!inWord) { inWord = 1; words++; }
     }
-    words++;                          /* last word on the line */
 }
 fclose(f);
 printf("%d lines, %d words, %d chars\n", lines, words, chars);`,out:"3 lines, 14 words, 71 chars"}
 ];
 const $=s=>document.querySelector(s);
 const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-const re=/(\/\*[\s\S]*?\*\/|\/\/.*|#[^\n]*)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])')|\b(int|char|float|double|void|unsigned|const|static|struct|union|enum|typedef|return|if|else|for|while|do|switch|case|default|break|continue|sizeof|NULL|uint8_t|FILE|Color|Person)\b|\b(\d+\.?\d*u?)\b/g;
+const re=/(\/\*[\s\S]*?\*\/|\/\/.*|#[^\n]*)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])')|\b(int|char|float|double|void|unsigned|const|static|struct|union|enum|typedef|return|if|else|for|while|do|switch|case|default|break|continue|sizeof|NULL|uint8_t|FILE|Color|Person|long|short|Student|Emp|Book|Product|Employee)\b|\b(\d+\.?\d*u?)\b/g;
 const hl=c=>esc(c).replace(re,(m,a,b,k,n)=>a?(a[0]=="#"&&a[1]!="!"&&!/^#\s/.test(a)?`<span class="p">${a}</span>`:`<span class="c">${a}</span>`):b?`<span class="s">${b}</span>`:k?`<span class="k">${k}</span>`:`<span class="n">${n}</span>`);
 const main=$("#main"),nav=$("#nav");
 T.forEach((d,i)=>{
@@ -295,8 +296,9 @@ const words=["data types","expressions","if else","switch","functions","pointers
 const row=words.map((w,i)=>i%3==0?`<span><em>${w}</em></span>`:`<span>${w}</span>`).join("·");
 $("#mq").innerHTML=row+row;
 const secs=[...document.querySelectorAll("section.pg")],dots=[...nav.children];
-new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add("in")}),{threshold:.2}).observe&&secs.forEach(s=>new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add("in")}),{threshold:.2}).observe(s));
-new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)dots.forEach((d,i)=>d.classList.toggle("on",secs[i]===e.target))}),{threshold:.5}).observe&&secs.forEach(s=>new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)dots.forEach((d,i)=>d.classList.toggle("on",secs[i]===e.target))}),{threshold:.5}).observe(s));
+const io1=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add("in")}),{threshold:.12});
+const io2=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)dots.forEach((d,i)=>d.classList.toggle("on",secs[i]===e.target))}),{rootMargin:"-45% 0px -45% 0px"});
+secs.forEach(x=>{io1.observe(x);io2.observe(x)});
 const bar=$("#bar"),h1=$(".hero h1");
 function tick(){
  const y=scrollY,m=document.documentElement.scrollHeight-innerHeight;
@@ -580,12 +582,12 @@ float avg = (s.m[0] + s.m[1] + s.m[2]) / 3.0f;
 printf("%s: %.1f\n", s.name, avg);`]]},
 {d:"Passing a structure by value copies every member, which is safe but slow for large records. Passing a pointer avoids the copy and lets the function update the original; access members with <code>-></code>. A function can also return a whole structure, or a pointer to an element (and <code>NULL</code> when not found). Splitting a program into <code>read</code>, <code>show</code>, <code>search</code> and <code>update</code> functions is modular programming.",q:[["Give a 10% raise to the employee with a given ID inside an array of employees, by reference.",String.raw`typedef struct { int id; float salary; } Emp;
 
-void raise(Emp *e) { e->salary *= 1.10f; }
+void giveRaise(Emp *e) { e->salary *= 1.10f; }
 
 int main(void) {
     Emp a[3] = {{101, 30000}, {102, 40000}, {103, 35000}};
     for (int i = 0; i < 3; i++)
-        if (a[i].id == 102) raise(&a[i]);
+        if (a[i].id == 102) giveRaise(&a[i]);
     printf("%.0f\n", a[1].salary);   /* 44000 */
 }`],["A shop sells units of a product. Write a function that takes a Product and units sold and returns the updated Product.",String.raw`typedef struct { int code; int stock; } Product;
 
@@ -625,19 +627,67 @@ while (fscanf(f, "%d", &m) == 1) { sum += m; n++; }
 fclose(f);
 if (n) printf("Average = %.2f\n", (float)sum / n);`]]}
 ];
+D[11].q.push(["Write countFrequency(int arr[], int n, int x) that returns how many times a roll number x appears in a list of attendance records.",String.raw`int countFrequency(int arr[], int n, int x) {
+    int c = 0;
+    for (int i = 0; i < n; i++)
+        if (arr[i] == x) c++;
+    return c;
+}
+
+int main(void) {
+    int a[8] = {5, 3, 5, 9, 5, 3, 1, 9};
+    printf("%d\n", countFrequency(a, 8, 5));   /* 3 */
+}`]);
+D[12].q.push(["Write mergeStrings(s1, s2, result) that joins a first name and a last name into a full name using loops only (no string.h functions).",String.raw`void mergeStrings(char s1[], char s2[], char result[]) {
+    int i = 0, j = 0;
+    while (s1[i] != '\0') { result[i] = s1[i]; i++; }
+    result[i++] = ' ';
+    while (s2[j] != '\0') result[i++] = s2[j++];
+    result[i] = '\0';
+}
+
+int main(void) {
+    char full[40];
+    mergeStrings("Ada", "Lovelace", full);
+    printf("%s\n", full);   /* Ada Lovelace */
+}`]);
+D[18].q.push(["Compare the cost of recursion and iteration: count how many recursive calls fib(10) makes and how many loop iterations the iterative version needs.",String.raw`int calls = 0;
+int fib(int n) { calls++; return n < 2 ? n : fib(n - 1) + fib(n - 2); }
+
+int main(void) {
+    int n = 10, r = fib(n);
+    printf("fib(%d) = %d, recursive calls = %d\n", n, r, calls);   /* 177 */
+
+    int a = 0, b = 1, iter = 0;
+    for (int i = 2; i <= n; i++) { int t = a + b; a = b; b = t; iter++; }
+    printf("fib(%d) = %d, loop iterations = %d\n", n, b, iter);    /* 9 */
+}`]);
+D[22].q.push(["A to-do app starts with room for 2 task IDs and grows by 2 whenever it is full. Add task IDs 101 to 105 using realloc and print the list.",String.raw`int cap = 2, n = 0;
+int *list = malloc(cap * sizeof(int));
+for (int id = 101; id <= 105; id++) {
+    if (n == cap) {
+        cap += 2;
+        list = realloc(list, cap * sizeof(int));
+    }
+    list[n++] = id;
+}
+for (int i = 0; i < n; i++) printf("%d ", list[i]);
+printf("\n(capacity %d)\n", cap);
+free(list);`]);
 const det=document.createElement("div");det.id="detail";document.body.appendChild(det);
 document.querySelectorAll(".hero,.mq,#main,.end").forEach(e=>e.classList.add("home"));
-let cur=-1;
+let cur=-1;const baseTitle=document.title;
 const cb=(f,c,o)=>`<div class="cb"><div class="h"><i></i><i></i><i></i><span>${f}</span></div><pre>${hl(c)}</pre>${o?`<div class="out">${esc(o)}</div>`:""}</div>`;
 function render(i){
  const d=T[i],x=D[i],n=String(i+1).padStart(2,"0"),pv=T[i-1],nx=T[i+1];
+ document.title=d.t.replace(/<[^>]+>/g,"").replace(/&amp;/g,"&")+" — C Programming";
  det.innerHTML=`<article class="dp"><a class="back" href="#c${n}">← All chapters</a>
  <div class="tag" style="margin-top:34px">Chapter ${n} / ${T.length} — ${d.tag}</div><h1>${d.t}</h1>
  <h3>The concept</h3><p>${d.p}</p><p>${x.d}</p><ul class="pts">${d.pts.map(p=>`<li>${p}</li>`).join("")}</ul>
  <h3>Worked example</h3>${cb(d.f,d.code,d.out)}
  <h3>Practice — real-life scenarios</h3><p>Try each one on paper or in your compiler first. Answers are shown as the code you would put in <code>main()</code> (with the usual <code>#include</code> lines).</p>
  ${x.q.map((q,k)=>`<div class="qq"><div class="tag">Scenario ${k+1}</div><p>${q[0]}</p><button class="sa" data-k="${k}" aria-expanded="false">Show answer</button><div class="ans" hidden></div></div>`).join("")}
- <div class="pn">${pv?`<a href="#/c/${i}">← ${pv.tag.split(" · ")[1]||""}</a>`:"<span></span>"}${nx?`<a href="#/c/${i+2}">${nx.tag.split(" · ")[1]||""} →</a>`:"<span></span>"}</div>
+ <div class="pn">${pv?`<a href="#/c/${i}">← ${String(i).padStart(2,"0")} ${pv.tag.split(" · ")[1]}</a>`:"<span></span>"}${nx?`<a href="#/c/${i+2}">${String(i+2).padStart(2,"0")} ${nx.tag.split(" · ")[1]} →</a>`:"<span></span>"}</div>
  <p class="cred">Made by <a href="https://github.com/Ajlikeadj" target="_blank" rel="noopener">Ajlikeadj</a></p></article>`;
  det.onclick=e=>{const b=e.target.closest(".sa");if(!b)return;const a=b.nextElementSibling;
   if(!a.innerHTML)a.innerHTML=cb("answer.c",x.q[+b.dataset.k][1]);
@@ -645,7 +695,7 @@ function render(i){
 }
 function route(){
  const m=location.hash.match(/^#\/c\/(\d+)$/);
- if(!m){if(cur>=0){document.body.classList.remove("d");det.innerHTML="";
+ if(!m){if(cur>=0){document.body.classList.remove("d");det.innerHTML="";document.title=baseTitle;
    const s=document.getElementById("c"+String(cur+1).padStart(2,"0"));cur=-1;if(s)s.scrollIntoView({behavior:"instant"})}return}
  const i=+m[1]-1;if(!T[i])return;
  cur=i;document.body.classList.add("d");render(i);scrollTo({top:0,behavior:"instant"});
